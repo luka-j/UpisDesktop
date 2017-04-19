@@ -5,3 +5,7 @@
 Omogućava grafičko sastavljanje upita (point-and-click) i istovremeno plotovanje više upita koristeći ploter koji je pisan za ovu potrebu.
 
 Koristi <http://upis.ml> kao API. Rađeno u Swingu.
+
+## License
+
+MPL-2.0
