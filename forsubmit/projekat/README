@@ -1,0 +1,26 @@
+CILJ:
+Transparentnost, slobodno dostupni anonimizirani podaci sa upisa u srednje škole u korisnom formatu. Idiot-proof sastavljanje upita i plotovanje svih podataka tako da svako sa rudimentarnim znanjem statistike (ili makar neke osnovne matematike) može da izvuče neki zaključak o osnovnoj školi, smeru ili uopšte celom sistemu koji ga zanima. Na prvi pogled je zvučalo jednostavno, ali ispostavlja se da je sastavljanje upita pomoću miša dosta teže nego što sam zamišljao, tako da su neke mogućnosti, od kojih je verovatno ključna reč "ili" najprimetnija. Zbog ovoga, postoji i tekstualni mod, koji date upite šalje u "sirovom" formatu - u ovom slučaju ne postoji garancija valjanosti upita, ali je moguće sastaviti nešto komplikovanije izraze. 
+Plotovanje mora da radi i sa velikim brojem tačaka (nekoliko stotina hiljada), uključujući i hover, na bilo kojoj rezoluciji, koristeći neku razumnu količinu memorije. Od utrošenog vremena >90% odlazi na čekanje odgovora od servera (idle). Ne treba ponavljati zahteve ako nije neophodno (npr. promena boje u query-ju, već poznat rezultat).
+100% preciznost i podudaranje sa podacima Ministarstva NIJE cilj (videti odeljak o podacima), ali većinsko poklapanje jeste.
+
+PODELA POSLA:
+Projekat se faktički sastoji iz tri dela: scrapper (https://github.com/luq-0/Upis15Crawler) koji pokrećem jednom godišnje koji uzima podatke sa sajta Ministarstva, server (https://github.com/luq-0/UpisStats) koji te podatke konvertuje u bazu, prevodi upite koje ova aplikacija šalje u SQL i vraća rezultate i ovaj program koji sastavlja upite, šalje ih serveru, iz njih izvlači min, max, prosek, broj i crta rezultate na plotu. "Suština" ovog programa je point-and-click sastavljač upita i brz, fleksibilan ploter čija je najveća mana to što ne podržava plotovanje negativnih upita kao ni 3d plotovanje koje postoji na sajtu (https://upis.ml). Značajnija razlika u odnosu na sajt je slučaj kada se specifikuje samo jedna osa za plotovanje, kada će se umesto šifre (default ponašanje) na drugoj osi plotovati broj rezultata, tako da se lakše uočavaju neke distribucije.
+
+PODACI I OGRANIČENJA:
+Podaci se svake godine preuzimaju sa upis.mpn.gov.rs pomoću scrappera i zatim konvertuju u PostgreSQL bazu koja se nalazi na serveru koji hostuje DigitalOcean, zajedno sa parserom upita. Pošto se uzimaju podaci sa upisa, ovaj program ne obuhvata celokupan sistem, već samo one učenike koji su upisali srednju školu, tako da je očekivano da brojevi koji se dobiju iz ovog programa budu neznatno viši od zvaničnih podataka. 
+Takođe, računanje proseka i bodova se vrši sa double preciznošću, bez zaokruživanja, što opet doprinosi razlici sa zvaničnim podacima koji se zaokružuju na dve decimale. Još jedan "quirk" su "bodovi sa prijemnog" koji se računaju kao razlika bodova koja je prikazana na sajtu i onoga što je server sračunao iz ocena i završnog, a pošto se od 2016. kod učenika koji su upisani po odluci OUKa prikazuje * umesto broja bodova, koja se interpretira kao 0, "bodovi sa prijemnog" su negativni za te učenike. Takođe se može desiti da 0<|bodovi_sa_prijemnog|<1 što bi ukazivalo na razliku u zaokruživanju.
+Ostale naizgled besmislene pojave su verovatno doslovno preuzete sa sajta Ministarstva - stvari poput učenika sa 0 bodova, kao i pojedinih sa prosekom <2 nisu moja krivica, već tako piše na zvaničnom sajtu.
+Opravdanost scrappovanja tražim u činjenici da su u pitanju javno dostupni podaci od javnog značaja na zvaničnom sajtu Ministarstva, iako iz meni nepoznatog razloga nisu obuhvaćeni OpenData projektom koji sprovodi isto ministarstvo. Bez obzira, čak i bez Zahteva za pristup informacijama i sličnih administrativnih stvari, najveći problem sa ovim pristupom je potencijalna optužba za DoS napad koja bi bila besmislena jer je scrapper prilično "nežan" (oko 3 zahteva po sekundi) i pokretao sam ga samo u periodu kada nije smetao postojećem saobraćaju (dakle ne odmah nakon objavljivanja podataka kada svi nahrle da vide rezultate). Uostalom, svaki iole kompetentan administrator bi primetio da 1/2 zahteva stiže sa iste adrese već dve godine za redom, tako da pretpostavljam da im ne smeta.
+
+STRUKTURA PROJEKTA:
+|--src/ - source kod
+  |---test/ - prazno
+  |---main/java/rs/luka/upisstats/desktop/ - root direktorijum u kom se nalazi sav kod
+     |---io/ - slanje zahteva serveru i učitavanje predloga iz fajla
+     |---model/ - Klase koje predstavljaju upit i rezultat i sve što njima treba
+     |---ui/ - Svi UI elementi, paneli i prozor. Najkompleksniji deo programa
+     |---Main - inicijalizacija komponenata, pokretanje programa
+     |---Utils - public static metode koje nisu vezane ni za jednu specifičnu klasu
+|--res/ - resursi: sličice za dugmad i predlozi za autocomplete box
+|--build.gradle, settings.gradle - build fajlovi (konfiguracija)
+|--gradlew, gradlew.bat - build skripte

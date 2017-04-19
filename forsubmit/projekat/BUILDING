@@ -1,0 +1,11 @@
+Linux:
+./gradlew shadowJar
+(skripta je modifikovana tako da ne gleda JAVA_HOME pošto sam imao problema s tim; očekuje da se javac & co. nalaze u PATH-u)
+
+Windows:
+gradlew.bat shadowJar
+
+U slučaju da ne uspe, pokušati i sa build parametrom, tj. gradlew build shadowJar
+
+
+jar fajl će biti buildovan u istom direktorijumu gde se nalazi i build.gradle pod imenom upis-desktop-1.0-SNAPSHOT-all.jar, kao i res/ folder. res/ se uvek mora nalaziti u istom direktorijumu kao i jar. U suprotnom dugmadi default-uju na tekstualne, a sugestije se ne prikazuju i nije moguće sastavljati upite koji kao uslov sadrže operacije sa tekstom.
